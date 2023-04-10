@@ -1,0 +1,7 @@
+target/
+semi-prime-factors/Cargo.lock
+*.rlib
+*.rmeta
+*.rmeta.d
+*.rmeta.json
+*.rmeta.bin
