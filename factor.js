@@ -1,3 +1,25 @@
+const interface = [
+  'Welcome to cpu killer\n',
+  // this can save lines that should show up after console.clear()
+];
+
+async function refreshInterface(newLine) {
+  console.clear();
+  for (let i = 0; i < interface.length; i++) {
+    console.log(interface[i]);
+  }
+  if (newLine) {
+    console.log(newLine);
+  }
+}
+
+function clearInterface() {
+  interface.length = 0;
+  interface.push('Welcome to cpu killer\n');
+  console.log('interface: ', interface);
+  refreshInterface();
+}
+
 function raiseToPower(base, power) {
   let result = BigInt(1);
   for (let i = 0; i < power; i++) {
@@ -39,7 +61,8 @@ function nextTwoPrimes(num) {
 // console.log('semiprime: ', semiprime);
 
 async function askUserForNumber() {
-  console.clear();
+  // console.clear();
+  clearInterface();
   const readline = require('readline').createInterface({
     input: process.stdin,
     output: process.stdout
@@ -50,11 +73,14 @@ async function askUserForNumber() {
     \n1) Generate a semi-prime for me\
     \n2) Enter a semi-prime myself\
     \n3) Use 77\
-    \n4) Pick one of the RSA numbers\
+    \n4) Pick one of the RSA numbers
     \nChoose an option: `,
     (answer) => {
 
       if (answer == 1) {
+        refreshInterface('You chose to generate a semi-prime for you. \
+        \nEnter a number, and the next two primes after that number will be found. \
+        \nThese two primes will then be multiplied to create a semi-prime\n');
         // ask user for a number and then find the next two primes
         readline.question('Enter a number greater than 1: ', (answer) => {
           // make sure answer is > 1
@@ -67,15 +93,23 @@ async function askUserForNumber() {
             return;
           }
           const nextPrimes = nextTwoPrimes(answer);
-          console.log('nextPrimes: ', nextPrimes);
+          interface.push(`The next two primes are: , ${nextPrimes[0]}, ${nextPrimes[1]}\n`);
+          refreshInterface();
+          // console.log('nextPrimes: ', nextPrimes);
           const semiprime = nextPrimes[0] * nextPrimes[1];
-          console.log('semiprime: ', semiprime);
+          interface.push(`The semi-prime is: ${semiprime}\n`);
+          refreshInterface();
+          // console.log('semiprime: ', semiprime);
           readline.close();
           // return semiprime;
+          setTimeout(() => {
+            clearInterface();
           console.log('calling main')
           main(semiprime);
+          }, 3000);
         });
       } else if (answer == 2) {
+        refreshInterface('You chose to enter a semi-prime yourself. This should be a number that is the product of two prime numbers.\n');
         // ask user for a semi-prime
         readline.question('Enter a semi-prime: ', (semiP) => {
           console.log('semiprime: ', semiP);
@@ -86,13 +120,14 @@ async function askUserForNumber() {
         });
       } else if (answer == 3) {
         // use 77
-        console.log('semiprime: ', 77);
+        // console.log('semiprime: ', 77);
         readline.close();
         // return 77;
         console.log('calling main')
         main(77);
       } else if (answer == 4) {
-        console.clear();
+        // console.clear();
+        refreshInterface();
         // pick one of the RSA numbers
         const rsaNums = [
           { name: 'RSA-100', number: '1522605027922533360535618378132637429718068114961380688657908494580122963258952897654000350692006139' },
@@ -108,7 +143,7 @@ async function askUserForNumber() {
 
         readline.question(prompt, (answer) => {
           if (answer > 0 && answer <= rsaNums.length) {
-            console.log('semiprime: ', rsaNums[answer - 1].number);
+            // console.log('semiprime: ', rsaNums[answer - 1].number);
             readline.close();
             // return rsaNums[answer - 1].number;
             console.log('calling main')
@@ -133,33 +168,40 @@ async function askUserForNumber() {
 askUserForNumber();
 
 async function main(n) {
+  // console.clear();
+  interface.push(`calculating factors of:\n${n}`)
+  refreshInterface();
   // const number = await askUserForNumber();
   const number = BigInt(n);
-  console.log('number: ', number);
+
   const result = badGuess(number, 2);
 
   let guess = result[0];
   let power = result[1];
-  console.log(`${guess} to the power of ${power} is 1 more than a multiple of ${number}`);
+  // console.log(`${guess} to the power of ${power} is 1 more than a multiple of ${number}`);
 
   const shareFactorsWithNumber = twoEquations(guess, power);
   // console.log('equations: ', shareFactorsWithNumber);
 
   const firstNum = shareFactorsWithNumber[0];
 
-  console.log('calculating factors of ' + number + '...');
   // const factors = factor(number); // [3, 5]
   // console.log(factors);
 
 
   const factor1 = euclid(firstNum, number);
+  const factor1Str = factor1.toString();
+  // remove the last character
+  // const factor1StrTrimmed = factor1Str;
 
-  console.log('factor1: ', factor1);
+  // console.log('factor1: ', factor1Str);
 
   // now find the other factor by dividing the number by the first factor
   const factor2 = number / factor1;
 
-  console.log('factor2: ', factor2);
+  console.log(`\nThe factors of ${number} are ${factor1} and ${factor2}`);
+
+  // console.log('factor2: ', factor2);
   // askUserForNumber();
   // ask user if they want to factor another number
   // if yes, call askUserForNumber()
@@ -170,11 +212,11 @@ async function main(n) {
       input: process.stdin,
       output: process.stdout
     });
-    readline.question('Would you like to factor another number? (y/n): ', (answer) => {
-      if (answer == 'y') {
+    readline.question('\nWould you like to factor another number? (1=yes / 2=no): ', (answer) => {
+      if (answer == 'y' || answer == '1' || answer == 'yes') {
         readline.close();
         askUserForNumber();
-      } else if (answer == 'n') {
+      } else if (answer == 'n' || answer == '2' || answer == 'no') {
         readline.close();
         process.exit();
       } else {
