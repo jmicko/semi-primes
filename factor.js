@@ -50,7 +50,7 @@ async function askUserForNumber() {
     \n1) Generate a semi-prime for me\
     \n2) Enter a semi-prime myself\
     \n3) Use 77\
-
+    \n4) Pick one of the RSA numbers\
     \nChoose an option: `,
     (answer) => {
 
@@ -91,11 +91,37 @@ async function askUserForNumber() {
         // return 77;
         console.log('calling main')
         main(77);
-      // } else if (answer == 4) {
-      //   // pick one of the RSA numbers
-      //   readline.question('Pick one of the RSA numbers: ', (answer) => {
+      } else if (answer == 4) {
+        console.clear();
+        // pick one of the RSA numbers
+        const rsaNums = [
+          { name: 'RSA-100', number: '1522605027922533360535618378132637429718068114961380688657908494580122963258952897654000350692006139' },
+          { name: 'RSA-110', number: '35794234179725868774991807832568455403003778024228226193532908190484670252364677411513516111204504060317568667' },
+          { name: 'RSA-120', number: '227010481295437363334259960947493668895875336466084780038173258247009162675779735389791151574049166747880487470296548479' },
+          { name: 'RSA-129', number: '114381625757888867669235779976146612010218296721242362562561842935706935245733897830597123563958705058989075147599290026879543541' },
+        ]
+        let prompt = `Pick one of the RSA numbers:\n`
+        for (let i = 0; i < rsaNums.length; i++) {
+          prompt += `${i + 1}) ${rsaNums[i].name}\n`;
+        }
+        prompt += `Choose an option: `;
 
-      //   });
+        readline.question(prompt, (answer) => {
+          if (answer > 0 && answer <= rsaNums.length) {
+            console.log('semiprime: ', rsaNums[answer - 1].number);
+            readline.close();
+            // return rsaNums[answer - 1].number;
+            console.log('calling main')
+            main(rsaNums[answer - 1].number);
+          } else {
+            console.log('invalid input, start over in 3 seconds');
+            readline.close();
+            setTimeout(() => {
+              askUserForNumber();
+            }, 3000);
+            return;
+          }
+        });
       } else {
         console.log('invalid input');
         readline.close();
