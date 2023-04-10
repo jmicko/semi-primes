@@ -20,6 +20,11 @@ function clearInterface() {
   refreshInterface();
 }
 
+// function to pause for x milliseconds in any async function
+function sleep(milliseconds) {
+  return new Promise(resolve => setTimeout(resolve, milliseconds))
+}
+
 function raiseToPower(base, power) {
   let result = BigInt(1);
   for (let i = 0; i < power; i++) {
@@ -174,7 +179,7 @@ async function main(n) {
   // const number = await askUserForNumber();
   const number = BigInt(n);
 
-  const result = badGuess(number, 2);
+  const result = await badGuess(number, 2);
 
   let guess = result[0];
   let power = result[1];
@@ -235,17 +240,33 @@ async function main(n) {
 // const factors = factor(number); // [3, 5]
 // console.log(factors);
 
-function badGuess(n, g) {
-  let guess = g;
+async function badGuess(n, g) {
+  const guess = g;
   let power = 1;
 
+  // let guessToPower;
+  let oldGuessToPower = BigInt(1);
+
+  interface.push(`\nRaising ${guess} to higher and higher powers until it is 1 more than a multiple of the semi-prime.\
+  \nAfterward, we will user euclid's algorithm to find the two prime factors of the semi-prime.`)
+
+  interface.push(`\nThe number displayed below is only updated every 100 iterations. All powers are being checked.`)
+
   while (true) {
+    if (power % 100 == 0) {
+      refreshInterface('checking power: ' + power);
+      
+    }
     // console.log('power: ', power);
     // raise guess to the power
-    let guessToPower = raiseToPower(guess, power);
-    // console.log('guessToPower: ', guessToPower);
+    // guessToPower = raiseToPower(guess, power);
+    // multiply oldGuessToPower by guess to get new guessToPower
+    oldGuessToPower *= BigInt(guess);
+    // console.log('oldGuessToPower: ', oldGuessToPower);
+    // console.log('guessToPower___: ', guessToPower);
+    // await sleep(10000);
     // now find remainder of guessToPower divided by n
-    let remainder = BigInt(guessToPower) % n;
+    let remainder = BigInt(oldGuessToPower) % n;
     // console.log('remainder: ', remainder);
     if (remainder == 1) {
       // console.log('guess: ', guess);
