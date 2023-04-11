@@ -8,13 +8,34 @@ use num_traits::Zero;
 // function to find the next prime after a given number
 pub fn find_next_prime(number: &BigInt) -> BigInt {
     let mut prime: BigInt = number + 1;
-    while !is_prime(&prime) {
-        println!("adding 1 to not prime number");
+    if &prime % 2 == BigInt::zero() {
         prime += 1;
-        println!("{} is not prime", prime)
     }
-    println!("{} is prime", prime);
+    while !is_prime(&prime) {
+        // println!("adding 1 to not prime number");
+        prime += 2;
+        // println!("{} is not prime", prime)
+    }
+    // println!("{} is prime", prime);
     prime
+}
+
+// function to find the factors of a given semi-prime number
+pub fn find_factors(semi_prime: &BigInt) -> (BigInt, BigInt) {
+    let mut prime1: BigInt = BigInt::from(2);
+    let prime2: BigInt;
+    // let mut found = false;
+    loop {
+        if semi_prime % &prime1 == BigInt::zero() {
+            prime2 = semi_prime / &prime1;
+            // if is_prime(&prime2) {
+            // found = true;
+            break;
+            // }
+        }
+        prime1 = find_next_prime(&prime1);
+    }
+    (prime1, prime2)
 }
 
 // pub fn find_next_prime(number: &BigInt) -> BigInt {
@@ -64,37 +85,37 @@ pub fn find_next_prime(number: &BigInt) -> BigInt {
 
 // function to check if a number is prime
 fn is_prime(num: &BigInt) -> bool {
-    println!("checking if {} is prime", num);
+    // println!("checking if {} is prime", num);
     let two = BigInt::from(2);
     let three = BigInt::from(3);
 
     // println!("{} == {} || {} == {}", *num, two, *num, three);
 
-    println!("point 1");
+    // println!("point 1");
     if *num == two || *num == three {
-        println!("true 1");
+        // println!("true 1");
         return true;
     }
-    println!("point 2");
+    // println!("point 2");
     if *num <= BigInt::zero() || num % &two == BigInt::zero() || num % &three == BigInt::zero() {
-        println!("false 1");
+        // println!("false 1");
         return false;
     }
 
-    println!("point 3");
+    // println!("point 3");
     let mut i = BigInt::from(5);
     while &i * &i <= *num {
         if &i % 60 == BigInt::zero() {
-            println!("point 4, start of loop {} * {} <= {}", i, i, num);
+            // println!("point 4, start of loop {} * {} <= {}", i, i, num);
         }
         if num % &i == BigInt::zero() || num % (&i + BigInt::from(2)) == BigInt::zero() {
-            println!("false 2");
+            // println!("false 2");
             return false;
         }
         i += BigInt::from(6);
     }
 
-    println!("true 2");
+    // println!("true 2");
     true
 }
 

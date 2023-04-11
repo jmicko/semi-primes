@@ -2,6 +2,7 @@ mod primes;
 
 use num_bigint::BigInt;
 use primes::find_next_prime;
+use primes::find_factors;
 use std::io;
 use std::io::Write;
 
@@ -22,6 +23,23 @@ fn main() {
     // call the function to generate a semi-prime, based on the user's choice
     let semi_prime = get_semi_prime(choice);
     println!("The semi-prime is {}", semi_prime);
+
+    // get a time stamp before the program starts so we can calculate how long it took
+    let start = std::time::Instant::now();
+    println!("time before: {:?}", start);
+
+    // calculate the factors of the semi-prime using the find_factors function
+    let factors = find_factors(&semi_prime);
+    println!("The factors are {:?}", factors);
+
+
+    // get a time stamp after the program ends so we can calculate how long it took
+    let end = std::time::Instant::now();
+    println!("time after:  {:?}", end);
+
+    // calculate the time it took to run the program
+    let duration = end.duration_since(start);
+    println!("time elapsed: {:?}", duration);
 
     // call the restart function to ask if the user would like to do it again
     restart();
@@ -207,12 +225,12 @@ fn pick_rsa_number() -> BigInt {
     clear_console();
     println!("Pick one of the RSA numbers:\n");
     // loop through the list of RSA numbers and print them
-    for (i, (bits, num)) in RSA_NUMS.iter().enumerate() {
-        println!("{}) {} bits: {}", i + 1, bits, num);
+    for (i, (bits, _num)) in RSA_NUMS.iter().enumerate() {
+        println!("{}) RSA-{}", i + 1, bits);
     }
     let mut input = String::new();
     loop {
-        println!("Choose an option:");
+        println!("\nChoose an option:");
         // get the user's input, and convert it to a u8
         io::stdin()
             .read_line(&mut input)
