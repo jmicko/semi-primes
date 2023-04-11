@@ -1,0 +1,11 @@
+{
+  "name": "semi-primes",
+  "version": "1.0.0",
+  "description": "CLI tool to calculate prime factors of semi-prime numbers",
+  "main": "factor.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "John Micko",
+  "license": "MIT"
+}
