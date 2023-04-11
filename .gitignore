@@ -5,3 +5,4 @@ semi-prime-factors/Cargo.lock
 *.rmeta.d
 *.rmeta.json
 *.rmeta.bin
+semi-prime-factors/semi-primes.code-workspace
