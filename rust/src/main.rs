@@ -84,7 +84,7 @@ fn get_semi_prime(choice: u8) -> BigInt {
     let semi_prime: BigInt;
     match choice {
         1 => semi_prime = generate_semi_prime(),
-        // 2 => semi_prime = enter_semi_prime(),
+        2 => semi_prime = enter_semi_prime(),
         // 3 => semi_prime = 77,
         // 4 => semi_prime = pick_rsa_number(),
         // if the user enters a number that is not 1, 2, 3 or 4, then the program will exit
@@ -149,4 +149,47 @@ fn generate_semi_prime() -> BigInt {
     // multiply the two primes together to create a semi-prime
     let semi_prime = prime1 * prime2;
     semi_prime
+}
+
+// function to get a semi-prime from the user
+fn enter_semi_prime() -> BigInt {
+    // clear the console
+    clear_console();
+    println!(
+        "You chose to enter a semi-prime yourself. \n\
+        This should be a number that is the product of two prime numbers.\n"
+    );
+    let mut input = String::new();
+    loop {
+        println!("Enter a semi-prime:");
+        // get the user's input, and convert it to a BigInt
+
+        io::stdin()
+            .read_line(&mut input)
+            .expect("Failed to read line");
+        // check that the user entered a number
+        match input.trim().parse::<BigInt>() {
+            Ok(num) => {
+                if num >= BigInt::from(6) {
+                    println!("You entered {}", num);
+                    // convert the user's input to a BigInt
+                    input = num.to_string();
+                    break;
+                } else {
+                    println!("Bad input!");
+                    input = String::new();
+                }
+            }
+            Err(_) => {
+                println!("You did not enter a number!");
+                // show what was entered
+                println!("You entered {}", input);
+                // clear the input variable
+                input = String::new();
+            }
+        }
+    }
+    // return the user's input as a BigInt
+    let input: BigInt = input.trim().parse().expect("Please type a number!");
+    input
 }
