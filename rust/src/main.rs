@@ -1,5 +1,6 @@
 use std::io;
 use std::io::Write;
+use num_bigint::BigInt;
 
 fn clear_console() {
     print!("\x1B[2J\x1B[1;1H");
@@ -62,8 +63,8 @@ fn display_options() -> u8 {
 }
 
 // function to generate a semi-prime, based on the user's choice
-fn get_semi_prime(choice: u8) -> u64 {
-    let semi_prime: u64;
+fn get_semi_prime(choice: u8) -> BigInt {
+    let semi_prime: BigInt;
     match choice {
         1 => semi_prime = generate_semi_prime(),
         // 2 => semi_prime = enter_semi_prime(),
@@ -79,7 +80,7 @@ fn get_semi_prime(choice: u8) -> u64 {
 }
 
 // function to generate a semi-prime
-fn generate_semi_prime() -> u64 {
+fn generate_semi_prime() -> BigInt {
     // clear the console
     clear_console();
     println!(
@@ -98,9 +99,9 @@ fn generate_semi_prime() -> u64 {
             .expect("Failed to read line");
         // check that the user entered a number, and convert the input to a u64
         // if the user did not enter a number, the program will panic
-        match input.trim().parse::<u64>() {
+        match input.trim().parse::<BigInt>() {
             Ok(num) => {
-                if num > 1 {
+                if num > BigInt::from(1) {
                     println!("You entered {}", num);
                     input = num.to_string();
                     break;
@@ -117,11 +118,11 @@ fn generate_semi_prime() -> u64 {
             }
         }
     }
-    // convert the user's input to a u64
-    let input: u64 = input.trim().parse().expect("Please type a number!");
+    // convert the user's input to a BigInt
+    let input: BigInt = input.trim().parse().expect("Please type a number!");
     // find the next two primes after the user's input
-    let prime1 = find_next_prime(input);
-    let prime2 = find_next_prime(prime1);
+    let prime1 = find_next_prime(&input);
+    let prime2 = find_next_prime(&prime1);
     println!("The two primes are {} and {}", prime1, prime2);
     // multiply the two primes together to create a semi-prime
     let semi_prime = prime1 * prime2;
@@ -129,28 +130,35 @@ fn generate_semi_prime() -> u64 {
 }
 
 // function to find the next prime after a given number
-fn find_next_prime(number: u64) -> u64 {
-    let mut prime = number + 1;
-    while !is_prime(prime) {
+fn find_next_prime(number: &BigInt) -> BigInt {
+    let mut prime: BigInt = number + 1;
+    while !is_prime(&prime) {
         prime += 1;
+        println!("{} is not prime", prime)
     }
+    println!("{} is prime", prime);
     prime
 }
 
 // function to check if a number is prime
-fn is_prime(num: u64) -> bool {
-    if num == 2 || num == 3 {
+fn is_prime(num: &BigInt) -> bool {
+    let two = BigInt::from(2);
+    let three = BigInt::from(3);
+
+    if *num == two || *num == three {
         return true;
     }
-    if num <= 1 || num % 2 == 0 || num % 3 == 0 {
+    if *num <= BigInt::from(0) || num % &two == BigInt::from(0) || num % &three == BigInt::from(0) {
         return false;
     }
-    let mut i = 5;
-    while i * i <= num {
-        if num % i == 0 || num % (i + 2) == 0 {
+
+    let mut i = BigInt::from(5);
+    while &i * &i <= *num {
+        if num % &i == BigInt::from(0) || num % (&i + BigInt::from(2)) == BigInt::from(0) {
             return false;
         }
-        i += 6;
+        i += BigInt::from(6);
     }
-    return true;
+
+    true
 }
