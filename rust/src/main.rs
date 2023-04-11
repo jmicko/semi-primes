@@ -85,8 +85,8 @@ fn get_semi_prime(choice: u8) -> BigInt {
     match choice {
         1 => semi_prime = generate_semi_prime(),
         2 => semi_prime = enter_semi_prime(),
-        // 3 => semi_prime = 77,
-        // 4 => semi_prime = pick_rsa_number(),
+        3 => semi_prime = BigInt::from(77),
+        4 => semi_prime = pick_rsa_number(),
         // if the user enters a number that is not 1, 2, 3 or 4, then the program will exit
         _ => {
             clear_console();
@@ -192,4 +192,53 @@ fn enter_semi_prime() -> BigInt {
     // return the user's input as a BigInt
     let input: BigInt = input.trim().parse().expect("Please type a number!");
     input
+}
+
+// function to pick a semi-prime from the list of RSA numbers
+fn pick_rsa_number() -> BigInt {
+    // create a list of RSA numbers as an array of tuples
+    const RSA_NUMS: [(u8, &str); 4] = [
+        (100, "1522605027922533360535618378132637429718068114961380688657908494580122963258952897654000350692006139"),
+        (110, "35794234179725868774991807832568455403003778024228226193532908190484670252364677411513516111204504060317568667"),
+        (120, "227010481295437363334259960947493668895875336466084780038173258247009162675779735389791151574049166747880487470296548479"),
+        (129, "114381625757888867669235779976146612010218296721242362562561842935706935245733897830597123563958705058989075147599290026879543541"),
+    ];
+    // clear the console
+    clear_console();
+    println!("Pick one of the RSA numbers:\n");
+    // loop through the list of RSA numbers and print them
+    for (i, (bits, num)) in RSA_NUMS.iter().enumerate() {
+        println!("{}) {} bits: {}", i + 1, bits, num);
+    }
+    let mut input = String::new();
+    loop {
+        println!("Choose an option:");
+        // get the user's input, and convert it to a u8
+        io::stdin()
+            .read_line(&mut input)
+            .expect("Failed to read line");
+        // check that the user entered a number, and convert the input to a u8
+        // if the user did not enter a number, the program will panic
+        match input.trim().parse::<u8>() {
+            Ok(num) => {
+                if num > 0 && num < 5 {
+                    println!("You entered {}", num);
+                    // input = num.to_string();
+                    // return the corresponding semi-prime
+                    let semi_prime: BigInt = RSA_NUMS[num as usize - 1].1.parse().unwrap();
+                    return semi_prime;
+                } else {
+                    println!("You did not enter a number from 1 to 4!");
+                    input = String::new();
+                }
+            }
+            Err(_) => {
+                println!("You did not enter a number!");
+                // show what was entered
+                println!("You entered {}", input);
+                // clear the input variable
+                input = String::new();
+            }
+        }
+    }
 }
