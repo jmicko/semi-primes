@@ -1,14 +1,21 @@
+mod primes;
+
+use num_bigint::BigInt;
+use primes::find_next_prime;
 use std::io;
 use std::io::Write;
-use num_bigint::BigInt;
+
+const CLEAR: bool = true;
 
 fn clear_console() {
-    print!("\x1B[2J\x1B[1;1H");
-    io::stdout().flush().unwrap();
+    if CLEAR {
+        print!("\x1B[2J\x1B[1;1H");
+        io::stdout().flush().unwrap();
+    }
 }
 
 fn main() {
-    println!("Hello, world!");
+    println!("Welcome to cpu killer\n");
     // get the user's choice of options
     let choice = display_options();
     println!("You chose {}", choice);
@@ -20,7 +27,7 @@ fn main() {
     restart();
 }
 
-fn restart(){
+fn restart() {
     // ask if the user would like to do it again
     // if the user enters 'y' or 'Y' or 1, then the program will run again
     // if the user enters 'n' or 'N', then the program will exit
@@ -43,7 +50,6 @@ fn restart(){
             std::process::exit(0);
         }
     }
-
 }
 
 // function to display a number of options, and return the user's choice
@@ -54,12 +60,23 @@ fn display_options() -> u8 {
     println!("3) Use 77");
     println!("4) Pick one of the RSA numbers");
     println!("\nPlease enter your choice:");
-    let mut choice = String::new();
-    io::stdin()
-        .read_line(&mut choice)
-        .expect("Failed to read line");
-    let choice: u8 = choice.trim().parse().expect("Please type a number!");
-    choice
+    let mut input = String::new();
+    // read the user's input, if it is invalid, have them try again
+    loop {
+        io::stdin()
+            .read_line(&mut input)
+            .expect("Failed to read line");
+        match input.trim().parse::<u8>() {
+            Ok(num) => {
+                println!("You entered {}", num);
+                break num;
+            }
+            Err(_) => {
+                println!("Bad input. Please enter a number.");
+                input = String::new();
+            }
+        };
+    }
 }
 
 // function to generate a semi-prime, based on the user's choice
@@ -72,8 +89,11 @@ fn get_semi_prime(choice: u8) -> BigInt {
         // 4 => semi_prime = pick_rsa_number(),
         // if the user enters a number that is not 1, 2, 3 or 4, then the program will exit
         _ => {
-            println!("You did not enter a valid choice. Exiting...");
-            std::process::exit(0);
+            clear_console();
+            println!("You did not enter a valid choice. Try again...");
+            // start over
+            main();
+            semi_prime = BigInt::from(0);
         }
     }
     semi_prime
@@ -84,9 +104,10 @@ fn generate_semi_prime() -> BigInt {
     // clear the console
     clear_console();
     println!(
-        "You chose to generate a semi-prime for you. \
+        "You chose to generate a semi-prime for you. \n\
     \nEnter a number, and the next two primes after that number will be found. \
-    \nThese two primes will then be multiplied to create a semi-prime\n"
+    \nThese two primes will then be multiplied to create a semi-prime.\
+    \nBe aware that larger numbers may take a very long time.\n"
     );
     let mut input = String::new();
     loop {
@@ -107,6 +128,7 @@ fn generate_semi_prime() -> BigInt {
                     break;
                 } else {
                     println!("You did not enter a number greater than 1!");
+                    input = String::new();
                 }
             }
             Err(_) => {
@@ -127,38 +149,4 @@ fn generate_semi_prime() -> BigInt {
     // multiply the two primes together to create a semi-prime
     let semi_prime = prime1 * prime2;
     semi_prime
-}
-
-// function to find the next prime after a given number
-fn find_next_prime(number: &BigInt) -> BigInt {
-    let mut prime: BigInt = number + 1;
-    while !is_prime(&prime) {
-        prime += 1;
-        println!("{} is not prime", prime)
-    }
-    println!("{} is prime", prime);
-    prime
-}
-
-// function to check if a number is prime
-fn is_prime(num: &BigInt) -> bool {
-    let two = BigInt::from(2);
-    let three = BigInt::from(3);
-
-    if *num == two || *num == three {
-        return true;
-    }
-    if *num <= BigInt::from(0) || num % &two == BigInt::from(0) || num % &three == BigInt::from(0) {
-        return false;
-    }
-
-    let mut i = BigInt::from(5);
-    while &i * &i <= *num {
-        if num % &i == BigInt::from(0) || num % (&i + BigInt::from(2)) == BigInt::from(0) {
-            return false;
-        }
-        i += BigInt::from(6);
-    }
-
-    true
 }
