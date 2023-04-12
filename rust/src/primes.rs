@@ -2,18 +2,43 @@
 
 use num_bigint::BigInt;
 use num_traits::Zero;
+use crate::utilities::clear_console;
 // use num_traits::One;
 // use std::collections::HashMap;
 
 // function to find the next prime after a given number
 pub fn find_next_prime(number: &BigInt) -> BigInt {
+
     let mut prime: BigInt = number + 1;
     if &prime % 2 == BigInt::zero() {
         prime += 1;
     }
+    let mut found_by_3: bool = false;
+    let mut by_3_counter: bool = false;
+
     while !is_prime(&prime) {
+        // println!("starting loop");
+        if !found_by_3 {
+            if &prime % 3 == BigInt::zero() {
+                prime += 2;
+                found_by_3 = true;
+                by_3_counter = true;
+            } else {
+                prime += 2;
+            }
+        } else {
+            if by_3_counter {
+                // println!("adding 4 to not prime number");
+                prime += 4;
+                by_3_counter = false;
+            } else {
+                // println!("adding 2 to not prime number");
+                prime += 2;
+                by_3_counter = true;
+            }
+        }
         // println!("adding 1 to not prime number");
-        prime += 2;
+        // prime += 2;
         // println!("{} is not prime", prime)
     }
     // println!("{} is prime", prime);
@@ -26,13 +51,17 @@ pub fn find_factors(semi_prime: &BigInt) -> (BigInt, BigInt) {
     let prime2: BigInt;
     // let mut found = false;
     loop {
+        clear_console();
+        println!("prime1: {}", prime1);
         if semi_prime % &prime1 == BigInt::zero() {
+
             prime2 = semi_prime / &prime1;
             // if is_prime(&prime2) {
             // found = true;
             break;
             // }
         }
+        // println!("finding next prime");
         prime1 = find_next_prime(&prime1);
     }
     (prime1, prime2)
@@ -90,11 +119,21 @@ fn is_prime(num: &BigInt) -> bool {
     let three = BigInt::from(3);
 
     // println!("{} == {} || {} == {}", *num, two, *num, three);
-
+    
     // println!("point 1");
     if *num == two || *num == three {
         // println!("true 1");
         return true;
+    }
+    // check if the last digit is 5
+    // all other numbers have been eliminated by this point
+    // first convert the number to a string, then get the last character
+    // this may not be faster for small numbers, but it should be faster for large numbers
+    let last_digit = num.to_string().chars().last().unwrap();
+    // println!("last digit: {}", last_digit);
+    if last_digit == '5' {
+        // println!("false 0");
+        return false;
     }
     // println!("point 2");
     if *num <= BigInt::zero() || num % &two == BigInt::zero() || num % &three == BigInt::zero() {
