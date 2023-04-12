@@ -174,6 +174,7 @@ async function askUserForNumber() {
 // main();
 askUserForNumber();
 
+// n is the semi-prime
 async function main(n) {
     // console.clear();
     interface.push(`calculating factors of:\n${n}`)
@@ -192,27 +193,15 @@ async function main(n) {
 
     const firstNum = shareFactorsWithNumber[0];
 
-    // const factors = factor(number); // [3, 5]
-    // console.log(factors);
-
-
     const factor1 = euclid(firstNum, number);
     const factor1Str = factor1.toString();
-    // remove the last character
-    // const factor1StrTrimmed = factor1Str;
-
-    // console.log('factor1: ', factor1Str);
 
     // now find the other factor by dividing the number by the first factor
     const factor2 = number / factor1;
 
     console.log(`\nThe factors of ${number} are ${factor1} and ${factor2}`);
 
-    // console.log('factor2: ', factor2);
-    // askUserForNumber();
-    // ask user if they want to factor another number
-    // if yes, call askUserForNumber()
-    // if no, exit
+
     doAgain();
     function doAgain() {
         const readline = require('readline').createInterface({
