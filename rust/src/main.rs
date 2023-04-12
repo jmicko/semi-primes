@@ -1,19 +1,11 @@
 mod primes;
+mod utilities;
 
 use num_bigint::BigInt;
-use primes::find_next_prime;
 use primes::find_factors;
+use primes::find_next_prime;
 use std::io;
-use std::io::Write;
-
-const CLEAR: bool = true;
-
-fn clear_console() {
-    if CLEAR {
-        print!("\x1B[2J\x1B[1;1H");
-        io::stdout().flush().unwrap();
-    }
-}
+use utilities::clear_console;
 
 fn main() {
     println!("Welcome to cpu killer\n");
@@ -31,7 +23,6 @@ fn main() {
     // calculate the factors of the semi-prime using the find_factors function
     let factors = find_factors(&semi_prime);
     println!("The factors are {:?}", factors);
-
 
     // get a time stamp after the program ends so we can calculate how long it took
     let end = std::time::Instant::now();
@@ -225,7 +216,7 @@ fn pick_rsa_number() -> BigInt {
     clear_console();
     println!("Pick one of the RSA numbers:\n");
     // loop through the list of RSA numbers and print them
-    for (i, (bits, _num)) in RSA_NUMS.iter().enumerate() {
+    for (i, (bits, _)) in RSA_NUMS.iter().enumerate() {
         println!("{}) RSA-{}", i + 1, bits);
     }
     let mut input = String::new();
