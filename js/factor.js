@@ -40,6 +40,8 @@ function isPrime(num) {
     if (num <= 1 || num % 2 == 0 || num % 3 == 0)
         return false;
     for (let i = 5; i * i <= num; i += 6) {
+        // starting at 5 and continuing until the square root of the number
+        // increment by 6 because all primes greater than 3 are of the form 6k ± 1
         if (num % i == 0 || num % (i + 2) == 0) {
             return false;
         }
