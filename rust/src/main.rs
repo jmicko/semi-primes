@@ -1,39 +1,73 @@
 mod primes;
 mod utilities;
 
+use duckdb::Connection;
 use num_bigint::BigInt;
 use primes::find_factors;
 use primes::find_next_prime;
+use primes::generate_primes;
 use std::io;
 use utilities::clear_console;
+
+// initialize the database connection so it can be used in the whole program
+struct Database {
+    conn: Connection,
+}
+
+impl Database {
+    fn new() -> Self {
+        let conn = Connection::open_in_memory().unwrap();
+        Self { conn }
+    }
+}
 
 fn main() {
     println!("Welcome to cpu killer\n");
     // get the user's choice of options
     let choice = display_options();
     println!("You chose {}", choice);
-    // call the function to generate a semi-prime, based on the user's choice
-    let semi_prime = get_semi_prime(choice);
-    println!("The semi-prime is {}", semi_prime);
 
-    // get a time stamp before the program starts so we can calculate how long it took
-    let start = std::time::Instant::now();
-    println!("time before: {:?}", start);
+    // if the choice is 5, then the user wants to generate primes
+    if choice == 5 {
+        // ask the user how many primes they want to generate
 
-    // calculate the factors of the semi-prime using the find_factors function
-    let factors = find_factors(&semi_prime);
-    println!("The factors are {:?}", factors);
+        println!("Upper limit of primes to generate?");
+        let mut input = String::new();
+        io::stdin()
+            .read_line(&mut input)
+            .expect("Failed to read line");
+        let input = input.trim();
+        let input = input.parse::<BigInt>().unwrap();
 
-    // get a time stamp after the program ends so we can calculate how long it took
-    let end = std::time::Instant::now();
-    println!("time after:  {:?}", end);
+        // call the generate_primes function to generate the primes
+        generate_primes(input);
+        // generate_primes(BigInt::from(100));
+        // call the restart function to ask if the user would like to do it again
+        restart();
+    } else {
+        // call the function to generate a semi-prime, based on the user's choice
+        let semi_prime = get_semi_prime(choice);
+        println!("The semi-prime is {}", semi_prime);
 
-    // calculate the time it took to run the program
-    let duration = end.duration_since(start);
-    println!("time elapsed: {:?}", duration);
+        // get a time stamp before the program starts so we can calculate how long it took
+        let start = std::time::Instant::now();
+        println!("time before: {:?}", start);
 
-    // call the restart function to ask if the user would like to do it again
-    restart();
+        // calculate the factors of the semi-prime using the find_factors function
+        let factors = find_factors(&semi_prime);
+        println!("The factors are {:?}", factors);
+
+        // get a time stamp after the program ends so we can calculate how long it took
+        let end = std::time::Instant::now();
+        println!("time after:  {:?}", end);
+
+        // calculate the time it took to run the program
+        let duration = end.duration_since(start);
+        println!("time elapsed: {:?}", duration);
+
+        // call the restart function to ask if the user would like to do it again
+        restart();
+    }
 }
 
 fn restart() {
@@ -68,6 +102,7 @@ fn display_options() -> u8 {
     println!("2) Enter a semi-prime myself");
     println!("3) Use 77");
     println!("4) Pick one of the RSA numbers");
+    println!("5) Generate primes");
     println!("\nPlease enter your choice:");
     let mut input = String::new();
     // read the user's input, if it is invalid, have them try again

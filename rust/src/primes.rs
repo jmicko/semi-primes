@@ -1,14 +1,13 @@
 // prims.rs: tools for working with primes
 
+use crate::utilities::clear_console;
 use num_bigint::BigInt;
 use num_traits::Zero;
-use crate::utilities::clear_console;
 // use num_traits::One;
 // use std::collections::HashMap;
 
 // function to find the next prime after a given number
 pub fn find_next_prime(number: &BigInt) -> BigInt {
-
     let mut prime: BigInt = number + 1;
     if &prime % 2 == BigInt::zero() {
         prime += 1;
@@ -54,7 +53,6 @@ pub fn find_factors(semi_prime: &BigInt) -> (BigInt, BigInt) {
         clear_console();
         println!("prime1: {}", prime1);
         if semi_prime % &prime1 == BigInt::zero() {
-
             prime2 = semi_prime / &prime1;
             // if is_prime(&prime2) {
             // found = true;
@@ -65,6 +63,59 @@ pub fn find_factors(semi_prime: &BigInt) -> (BigInt, BigInt) {
         prime1 = find_next_prime(&prime1);
     }
     (prime1, prime2)
+}
+#[derive(Debug)]
+pub struct PrimePair {
+    prime: BigInt,
+    current_mod_value: BigInt,
+}
+
+pub fn generate_primes(limit: BigInt) -> Vec<PrimePair> {
+    // with a limit of 100, we should end up with this:
+    // primes: [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97]
+    //         [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97]
+    let mut primes: Vec<PrimePair> = Vec::new();
+
+    let mut current_num: BigInt = BigInt::from(3);
+
+    let two_pair = PrimePair {
+        prime: BigInt::from(2),
+        current_mod_value: BigInt::from(1),
+    };
+    primes.push(two_pair);
+
+    // current_num += 1;
+
+    while &current_num <= &limit {
+        let mut current_num_is_prime = true;
+        for mut prime_pair in &mut primes {
+            // set the current_mod_value to be (current_num +1) % prime_pair.prime
+            prime_pair.current_mod_value = (&prime_pair.current_mod_value + 2) % &prime_pair.prime;
+            // println!("current_num: {}, prime_pair.prime: {}, current_mod_value: {}", current_num, prime_pair.prime, prime_pair.current_mod_value);
+            if current_num_is_prime && prime_pair.current_mod_value == BigInt::zero() {
+                current_num_is_prime = false;
+            }
+        }
+        // println!("current_num_is_prime: {}", &current_num_is_prime);
+        if current_num_is_prime {
+            let new_prime_pair = PrimePair {
+                prime: current_num.clone(),
+                current_mod_value: BigInt::zero(),
+            };
+            clear_console();
+            println!("Found a prime: {}", current_num);
+            primes.push(new_prime_pair);
+        }
+        current_num += 2;
+    }
+    let mut primes_only: Vec<BigInt> = Vec::new();
+    // println!("primes: {:?}", primes);
+    for prime_pair in &primes {
+        // println!("prime: {}, current_mod_value: {}", prime_pair.prime, prime_pair.current_mod_value);
+        primes_only.push(prime_pair.prime.clone());
+    }
+    println!("primes_only: {:?}", primes_only);
+    primes
 }
 
 // pub fn find_next_prime(number: &BigInt) -> BigInt {
@@ -119,7 +170,7 @@ fn is_prime(num: &BigInt) -> bool {
     let three = BigInt::from(3);
 
     // println!("{} == {} || {} == {}", *num, two, *num, three);
-    
+
     // println!("point 1");
     if *num == two || *num == three {
         // println!("true 1");
