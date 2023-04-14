@@ -76,7 +76,7 @@ pub struct PrimePair {
 //                                                                      v 49 right here combines the two jumps into a 6
 //                                            6   2   6   4   2   4   2   4   6   2   6   4   2   4   2   4
 //                                            6   2   6   4   2   4   6       6   2   6   4   2   4   6
-pub fn generate_primes(limit: BigInt) -> Vec<PrimePair> {
+
     // with a limit of 100, we should end up with this:
     // primes: [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47,     53, 59, 61, 67, 71, 73,     79, 83, 89, 97]
     //         [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47,     53, 59, 61, 67, 71, 73,     79, 83, 89, 97, 101, 103, 107, 109, 113, 127, 131, 137, 139, 149, 151, 157, 163, 167, 173, 179, 181, 191, 193, 197, 199, 211, 223, 227, 229, 233,
@@ -118,6 +118,66 @@ pub fn generate_primes(limit: BigInt) -> Vec<PrimePair> {
     // was onto something with the squares of primes and multiples of those squares. Sieve of Atkin uses that strategy
     // maybe a sieve is the best strategy, and just use the pattern to eliminate a good amount of numbers first
 
+    // holy codebro man, if I just add the numbers regardless of primality and only based on the pattern,
+    // for 100_000 limit, it finishes in 2s vs 340s +- 20s if I check each one for primality
+    // this ends with ~26k numbers in the list, vs 9592 actual primes below 100_000
+    // maybe a sieve would work better?
+    // actually, if looking for factors of semi-primes, it's not mandatory to use primes only.
+    // If it takes longer to eliminate a number as composite than it would take to test it as a factor, then it's better to just test it as a factor
+    // using the pattern to cut out 3/4 of all numbers saves a lot of time on it's own
+    // when looking for factors of the RSA numbers, human error is also a factor.
+    // "For better security", RSA recommends not to us a very samll prime
+    // Which means there's no need to test small primes. Can skip a lot of numbers that way
+    // there's no mathematical way to asses the limit of "a small prime" though, right? So it's based on feelings
+    // 
+    // for example, the RSA numbers and solutions:
+    // RSA-100
+    // 35794234179725868774991807832568455403003778024228226193532908190484670252364677411513516111204504060317568667
+    // solutions:
+    // 6122421090493547576937037317561418841225758554253106999
+    // 5846418214406154678836553182979162384198610505601062333
+    // 
+    // RSA-120
+    // 227010481295437363334259960947493668895875336466084780038173258247009162675779735389791151574049166747880487470296548479
+    // solutions:
+    // 327414555693498015751146303749141488063642403240171463406883
+    // 693342667110830181197325401899700641361965863127336680673013
+    // RSA-129
+    // 114381625757888867669235779976146612010218296721242362562561842935706935245733897830597123563958705058989075147599290026879543541
+    // solutions:
+    // 3490529510847650949147849619903898133417764638493387843990820577
+    // 32769132993266709549961988190834461413177642967992942539798288533
+    // 
+    // RSA-160
+    // 2152741102718889701896015201312825429257773588845675980170497676778133145218859135673011059773491059602497907111585214302079314665202840140619946994927570407753
+    // solutions:
+    // 45427892858481394071686190649738831656137145778469793250959984709250004157335359
+    // 47388090603832016196633832303788951973268922921040957944741354648812028493909367
+    // 
+    // In each case, both numbers contain half the number of digits of the RSA number
+    // If the RSA number has an odd number of digits, they split the difference. One factor is 1 digit longer to make up for it
+    // So for example in the case of RSA-100, you only need to test the numbers between
+    // 1000000000000000000000000000000000000000000000000000000
+    // and
+    // 9999999999999999999999999999999999999999999999999999999
+    // 
+    // Also, while possible, it is unlikely that the first digit of the factors will be 1
+    // So with RSA-100 for example, you could probably start at
+    // 2000000000000000000000000000000000000000000000000000000
+    // 
+    // Similarily however, it is extremely unlikely the there are a bunch of 0s in a row
+    // still possible to have 0s tho
+    // There are 10 possible digits 0-9, so probably the numbers will consist of 1/10 of each digit
+    // statistically extremely unlikely that say, 1/3 of the digits are any given digit
+    // Could rule out a lot of numbers without any math simply by counting the number of each digit, and testing against the length of the number
+    // 49+7 in base 50 = 16. 1+6 is 7, so 16 (56 -> base 50) is divisible 7 in base 50
+    // because when you carry the 1, you are representing a multiple of 7 and subtracting 1 from the number you increase by
+    // that's why the trick works where you add the digits and if they = 3, 6, or 9, then it's divisible by 3
+    // not sure if converting numbers to base 7 is computationally easy tho, but my understanding is they convert to binary anyway? But maybe not with the BigInt library?
+    // using mod is probably faster or at least fast enough, and def easier
+
+
+pub fn generate_primes(limit: BigInt) -> Vec<PrimePair> {
     let mut primes: Vec<PrimePair> = Vec::new();
     let mut primes_only: Vec<BigInt> = Vec::new();
     let mut uncaught_composites: Vec<BigInt> = Vec::new();
@@ -141,40 +201,42 @@ pub fn generate_primes(limit: BigInt) -> Vec<PrimePair> {
 
     while &current_num <= &limit {
         let mut current_num_is_prime = true;
-        for mut prime_pair in &mut primes {
 
-            
-            // set the current_mod_value to be (current_num +1) % prime_pair.prime
-            // println!("current jump distance: {}", jump_distance[jump_index]);
-            prime_pair.current_mod_value =
-                (&prime_pair.current_mod_value + jump_distance[jump_index]) % &prime_pair.prime;
+        //
+        //
+        //
+        // for mut prime_pair in &mut primes {
+        //
+        //     // set the current_mod_value to be (current_num +1) % prime_pair.prime
+        //     // println!("current jump distance: {}", jump_distance[jump_index]);
+        //     prime_pair.current_mod_value =
+        //         (&prime_pair.current_mod_value + jump_distance[jump_index]) % &prime_pair.prime;
+        //
+        //     if prime_pair.add_this_and_continue != BigInt::zero() {
+        //         // println!("adding {} to total_to_add", prime_pair.add_this_and_continue);
+        //         total_to_add += prime_pair.add_this_and_continue.clone();
+        //         prime_pair.add_this_and_continue = BigInt::zero();
+        //     }
+        //
+        //     // println!("current_num: {}, prime_pair.prime: {}, current_mod_value: {}", current_num, prime_pair.prime, prime_pair.current_mod_value);
+        //     if current_num_is_prime && prime_pair.current_mod_value == BigInt::zero() {
+        //         // println!(
+        //         //     "current num is not prime: {} , current_mod_value: {}, jump_distance: {}",
+        //         //     current_num, prime_pair.current_mod_value, jump_distance[jump_index]
+        //         // );
+        //         current_num_is_prime = false;
+        //         uncaught_composites.push(current_num.clone());
+        //         // at this point we save the current total to add in the prime_pair.add_this_and_continue
+        //         // then we can break out of the loop
+        //         prime_pair.add_this_and_continue = total_to_add.clone();
+        //     }
+        //
+        // }
+        //
+        //
+        //
 
-
-            if prime_pair.add_this_and_continue != BigInt::zero() {
-                // println!("adding {} to total_to_add", prime_pair.add_this_and_continue);
-                total_to_add += prime_pair.add_this_and_continue.clone();
-                prime_pair.add_this_and_continue = BigInt::zero();
-            }
-                
-
-            // println!("current_num: {}, prime_pair.prime: {}, current_mod_value: {}", current_num, prime_pair.prime, prime_pair.current_mod_value);
-            if current_num_is_prime && prime_pair.current_mod_value == BigInt::zero() {
-                // println!(
-                //     "current num is not prime: {} , current_mod_value: {}, jump_distance: {}",
-                //     current_num, prime_pair.current_mod_value, jump_distance[jump_index]
-                // );
-                current_num_is_prime = false;
-                uncaught_composites.push(current_num.clone());
-                // at this point we save the current total to add in the prime_pair.add_this_and_continue
-                // then we can break out of the loop
-                prime_pair.add_this_and_continue = total_to_add.clone();
-            }
-
-
-        }
-
-
-        total_to_add = BigInt::zero();
+        // total_to_add = BigInt::zero();
         // println!("current_num_is_prime: {}", &current_num_is_prime);
         if current_num_is_prime {
             let new_prime_pair = PrimePair {
@@ -183,8 +245,10 @@ pub fn generate_primes(limit: BigInt) -> Vec<PrimePair> {
                 left_until_next: current_num.clone(),
                 add_this_and_continue: BigInt::zero(),
             };
-            clear_console();
-            println!("Found a prime: {}", current_num);
+            // clear_console();
+            if &current_num % 600 == BigInt::from(23) {
+                println!("Found a prime: {}", current_num);
+            }
             primes.push(new_prime_pair);
         }
 
