@@ -42,6 +42,7 @@ function isPrime(num) {
     for (let i = 5; i * i <= num; i += 6) {
         // starting at 5 and continuing until the square root of the number
         // increment by 6 because all primes greater than 3 are of the form 6k ± 1
+        // this will efectively check 5 and 7 on the first loop, then 11 and 13 etc
         if (num % i == 0 || num % (i + 2) == 0) {
             return false;
         }

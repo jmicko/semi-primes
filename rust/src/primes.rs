@@ -72,9 +72,9 @@ pub struct PrimePair {
     left_until_next: BigInt,
 }
 
-//                                                                      v 49 right here combines the two jumps into a 6                                           
-//                                            6   2   6   4   2   4   2   4   6   2   6   4   2   4   2   4       
-//                                            6   2   6   4   2   4   6       6   2   6   4   2   4   6       
+//                                                                      v 49 right here combines the two jumps into a 6
+//                                            6   2   6   4   2   4   2   4   6   2   6   4   2   4   2   4
+//                                            6   2   6   4   2   4   6       6   2   6   4   2   4   6
 pub fn generate_primes(limit: BigInt) -> Vec<PrimePair> {
     // with a limit of 100, we should end up with this:
     // primes: [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47,     53, 59, 61, 67, 71, 73,     79, 83, 89, 97]
@@ -82,20 +82,23 @@ pub fn generate_primes(limit: BigInt) -> Vec<PrimePair> {
     //            1  2  2  4  2   4   2   4   6   2   6   4   2   4   2   4   6   2   6   4   2   4   2   4   6   8   4    2    4    2    4    14   4    6    2    10   2    6    6    4    6
     //            1  2  2  4  2   4   2   4   6   2   6   4   2   4     6     6   2   6   4   2     6     4   6   8   4    2    4    2    4    14   4    6    2    10   2    6    6    4    6
     //                      ^9                                             6  6   2   6   4   2     6     4   6  2+6  4    2    4    2    4   6+2+6 4   2+4   2   4+6   2    6   4+2   4   2+4   6    2   6+4   2    4    2   4+6+2  12
-    //                                       2+4     2+4               2+4           4+2           4+2       2+4 4+4                                               ^ 49*3=147?
-    //                      ^ 9               ^ 25                     ^ 49 would be here.            ^? 25*3?                                   ^ 121=11*11 would be here. and combines three jumps into a 14
+    //                                       2+4     2+4               2+4           4+2           4+2       2+4 4+4                                               ^ 11*13=143?
+    //                      ^ 9               ^ 25                     ^ 49 would be here.            ^?  77?                                   ^ 121=11*11 would be here. and combines three jumps into a 14? or is it also 5 cubed?
     //                                        ^ here we break the +2 +4 +2 +4 pattern, maybe because we hit 25, which is the square of 5, the next prime number after 3
-    //                                        ^ the next increment would have been 4, then 2, but since we hit this square number, we add the two increments together to get 6, a new pattern? 
+    //                                        ^ the next increment would have been 4, then 2, but since we hit this square number, we add the two increments together to get 6, a new pattern?
     //                                          Notable that we broke the +2 +2 +2 pattern at 9, which is the square of 3, the next prime number after 2
     //                                          Do we start a new pattern which breaks at the square of the next prime number? That would be 49, which is the square of 7
     //                                  okay but what about the pattern change right after 89? 10*10? 9*11?
     //                                  It's a plus 8, which is something we haven't seen yet
     //                                  but maybe it's because the pattern isn't numbers directly? But 8 = 6+2, or 4+2+2, or 2+2+2+2
     //                                  we would expect another 2 at the 25 pattern break, but we get a 6 instead, which is the number we expect, plus the next number we expect. Or 2+4
-    // when the pattern breaks at 3 squared, the new pattern length is 2 --> 4 2 or is it 4? 4 2 4 2
-    // when the pattern breaks at 5 squared, the new pattern length is 8 --> 6 2 6 4 2 4 2 4
-    // when the pattern breaks at 7 squared, the new pattern length is   --> 6 2 6 4 2 4 6 === 6 2 6 4 2 4 6 4 6 8 4 2 4 2 4     
-
+    // when the pattern breaks at 3 squared, the new pattern length is 2  --> 4 2 or is it 4? 4 2 4 2
+    // when the pattern breaks at 5 squared, the new pattern length is 8? --> 6 2 6 4 2 4 2 4
+    // when the pattern breaks at 7 squared, the new pattern length is    --> 6 2 6 4 2 4 6 === 6 2 6 4 2 4 6 4 6 8 4 2 4 2 4
+    //
+    // okay so, the pattern jumps when we hit a prime squared, or when we hit a prime * the next prime.
+    // which would I think mean the pattern would get much longer every time that happens, so there will be diminishing returns vs just testing every number that comes up in a pattern
+    // so we can use the pattern to eliminate a good amount of primes below the square root of a semi-prime, and then test the rest
 
     //  4 6 8 9 10 12 14 15 16 18 20 21 22 24 26 27 28 30 32 33 34 35 36 38 39 40 42 44 45 46 48 50 51 52 54 55 56
     // a prime number will not be needed to rule out a number as composite until the square of that prime number is reached? Is that true?
@@ -106,7 +109,7 @@ pub fn generate_primes(limit: BigInt) -> Vec<PrimePair> {
     // but this is why you only need to test numbers up to the square root of a number to see if it's prime
 
     // 2 and 3 line up every other number, so we can skip every other 2, and increase by 4 instead
-    // wait is that just because 2 + 4 = 6, and 2 * 3 = 6? 
+    // wait is that just because 2 + 4 = 6, and 2 * 3 = 6?
     // start with 2
     // add 2 to get 4, which we rule out by 2s
     // but then we can jump 4 to get to 8, skipping the 6 check because we already know 2 & 3 line up on 6
@@ -115,6 +118,10 @@ pub fn generate_primes(limit: BigInt) -> Vec<PrimePair> {
     let mut primes: Vec<PrimePair> = Vec::new();
 
     let mut current_num: BigInt = BigInt::from(3);
+
+    // let jump_distance: Vec<u8> = vec![6, 2, 6, 4, 2, 4, 2, 4];
+    let mut jump_distance: Vec<u8> = vec![2];
+    let mut jump_index = 0;
 
     let two_pair = PrimePair {
         prime: BigInt::from(2),
@@ -130,9 +137,15 @@ pub fn generate_primes(limit: BigInt) -> Vec<PrimePair> {
         let mut current_num_is_prime = true;
         for mut prime_pair in &mut primes {
             // set the current_mod_value to be (current_num +1) % prime_pair.prime
-            prime_pair.current_mod_value = (&prime_pair.current_mod_value + 2) % &prime_pair.prime;
+            // println!("current jump distance: {}", jump_distance[jump_index]);
+            prime_pair.current_mod_value =
+                (&prime_pair.current_mod_value + jump_distance[jump_index]) % &prime_pair.prime;
             // println!("current_num: {}, prime_pair.prime: {}, current_mod_value: {}", current_num, prime_pair.prime, prime_pair.current_mod_value);
             if current_num_is_prime && prime_pair.current_mod_value == BigInt::zero() {
+                // println!(
+                //     "current num is not prime: {} , current_mod_value: {}, jump_distance: {}",
+                //     current_num, prime_pair.current_mod_value, jump_distance[jump_index]
+                // );
                 current_num_is_prime = false;
             }
         }
@@ -147,7 +160,34 @@ pub fn generate_primes(limit: BigInt) -> Vec<PrimePair> {
             println!("Found a prime: {}", current_num);
             primes.push(new_prime_pair);
         }
-        current_num += 2;
+
+
+
+
+
+
+        if &current_num == &BigInt::from(23) {
+            // println!("current_num: {}", current_num);
+            jump_distance = vec![6, 2, 6, 4, 2, 4, 2, 4];
+            jump_index = jump_distance.len() - 1;
+        }
+
+
+
+        // need to keep index in bounds
+        jump_index = (jump_index + 1) % jump_distance.len();
+
+
+        // current_num += 2;
+        // need to keep track of the jump distance
+        current_num += jump_distance[jump_index];
+
+
+
+
+
+
+
     }
     let duration = start.elapsed();
     let mut primes_only: Vec<BigInt> = Vec::new();
