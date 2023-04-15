@@ -3,9 +3,10 @@ mod utilities;
 
 use duckdb::Connection;
 use num_bigint::BigInt;
+use num_traits::ToPrimitive;
 use primes::find_factors;
 use primes::find_next_prime;
-// use primes::generate_primes;
+use primes::generate_primes;
 use primes::generate_primes_unumtype;
 use std::io;
 use utilities::clear_console;
@@ -32,12 +33,6 @@ fn main() {
     if choice == 5 {
         // ask for a lower limit
         println!("Lower limit of primes to generate?");
-        let mut lower_limit = String::new();
-        io::stdin()
-            .read_line(&mut lower_limit)
-            .expect("Failed to read line");
-        let lower_limit = lower_limit.trim();
-        let lower_limit = lower_limit.parse::<u128>().unwrap();
 
         // ask for an upper limit
         println!("Upper limit of primes to generate?");
@@ -46,11 +41,15 @@ fn main() {
             .read_line(&mut upper_limit)
             .expect("Failed to read line");
         let upper_limit = upper_limit.trim();
-        let upper_limit = upper_limit.parse::<u128>().unwrap();
+        let upper_limit = upper_limit.parse::<BigInt>().unwrap();
 
         // call the generate_primes function to generate the primes
-        // generate_primes(lower_limit, upper_limit);
-        generate_primes_unumtype(lower_limit, upper_limit);
+        match upper_limit.to_u128() {
+            Some(upper_limit) => generate_primes_unumtype(upper_limit),
+            None => generate_primes(upper_limit),
+        };
+        // generate_primes( BigInt::from(upper_limit));
+        // generate_primes_unumtype(upper_limit);
         // generate_primes(BigInt::from(100));
         // call the restart function to ask if the user would like to do it again
         restart();

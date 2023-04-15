@@ -2,8 +2,8 @@
 
 use crate::utilities::clear_console;
 use num_bigint::BigInt;
+use num_traits::One;
 use num_traits::Zero;
-// use num_traits::One;
 // use std::collections::HashMap;
 
 // function to find the next prime after a given number
@@ -66,17 +66,23 @@ pub fn find_factors(semi_prime: &BigInt) -> (BigInt, BigInt) {
 }
 
 #[derive(Debug)]
-// pub struct PrimePair {
-//     prime: BigInt,
-//     current_mod_value: BigInt,
-//     left_until_next: BigInt,
-//     add_this_and_continue: BigInt,
-// }
+pub struct PrimePairBigInt {
+    prime: BigInt,
+    current_mod_value: BigInt,
+    left_until_next: BigInt,
+    add_this_and_continue: BigInt,
+}
+#[derive(Debug)]
 pub struct PrimePair {
     prime: u128,
     current_mod_value: u128,
     left_until_next: u128,
     add_this_and_continue: u128,
+}
+
+pub enum PrimePairOrBigInt {
+    Pair(Vec<PrimePair>),
+    BigIntPair(Vec<PrimePairBigInt>),
 }
 
 //                                                                      v 49 right here combines the two jumps into a 6
@@ -182,111 +188,155 @@ pub struct PrimePair {
 // not sure if converting numbers to base 7 is computationally easy tho, but my understanding is they convert to binary anyway? But maybe not with the BigInt library?
 // using mod is probably faster or at least fast enough, and def easier
 
-// pub fn generate_primes(lower_limit: BigInt, upper_limit: BigInt) -> Vec<PrimePair> {
-//     let mut primes: Vec<PrimePair> = Vec::new();
-//     let mut primes_only: Vec<BigInt> = Vec::new();
-//     let mut uncaught_composites: Vec<BigInt> = Vec::new();
+pub fn generate_primes( upper_limit: BigInt) -> PrimePairOrBigInt {
+    let mut primes: Vec<PrimePairBigInt> = Vec::new();
+    let mut primes_only: Vec<BigInt> = Vec::new();
+    let mut uncaught_composites: Vec<BigInt> = Vec::new();
 
-//     let mut current_num: BigInt = BigInt::from(3);
-//     // let jump_distance: Vec<u8> = vec![6, 2, 6, 4, 2, 4, 2, 4];
-//     let mut jump_distance: Vec<u8> = vec![2];
-//     let mut jump_index = 0;
+    let mut current_num: BigInt = BigInt::from(3);
+    // let jump_distance: Vec<u8> = vec![6, 2, 6, 4, 2, 4, 2, 4];
+    let mut jump_distance: Vec<u8> = vec![2];
+    let mut jump_index = 0;
 
-//     let two_pair = PrimePair {
-//         prime: BigInt::from(2),
-//         current_mod_value: BigInt::from(1),
-//         left_until_next: BigInt::from(1),
-//         add_this_and_continue: BigInt::zero(),
-//     };
-//     primes.push(two_pair);
+    let two_pair = PrimePairBigInt {
+        prime: BigInt::from(2),
+        current_mod_value: BigInt::one(),
+        left_until_next: BigInt::one(),
+        add_this_and_continue: BigInt::zero(),
+    };
+    primes.push(two_pair);
 
-//     let start = std::time::Instant::now();
-//     // current_num += 1;
-//     let mut total_to_add = BigInt::zero();
+    let start = std::time::Instant::now();
+    // current_num += 1;
+    let mut total_to_add = BigInt::zero();
 
-//     while &current_num <= &upper_limit {
-//         let mut current_num_is_prime = true;
+    while current_num <= upper_limit {
+        let mut current_num_is_prime = true;
 
-//         //
-//         //
-//         //
-//         // for mut prime_pair in &mut primes {
-//         //
-//         //     // set the current_mod_value to be (current_num +1) % prime_pair.prime
-//         //     // println!("current jump distance: {}", jump_distance[jump_index]);
-//         //     prime_pair.current_mod_value =
-//         //         (&prime_pair.current_mod_value + jump_distance[jump_index]) % &prime_pair.prime;
-//         //
-//         //     if prime_pair.add_this_and_continue != BigInt::zero() {
-//         //         // println!("adding {} to total_to_add", prime_pair.add_this_and_continue);
-//         //         total_to_add += prime_pair.add_this_and_continue.clone();
-//         //         prime_pair.add_this_and_continue = BigInt::zero();
-//         //     }
-//         //
-//         //     // println!("current_num: {}, prime_pair.prime: {}, current_mod_value: {}", current_num, prime_pair.prime, prime_pair.current_mod_value);
-//         //     if current_num_is_prime && prime_pair.current_mod_value == BigInt::zero() {
-//         //         // println!(
-//         //         //     "current num is not prime: {} , current_mod_value: {}, jump_distance: {}",
-//         //         //     current_num, prime_pair.current_mod_value, jump_distance[jump_index]
-//         //         // );
-//         //         current_num_is_prime = false;
-//         //         uncaught_composites.push(current_num.clone());
-//         //         // at this point we save the current total to add in the prime_pair.add_this_and_continue
-//         //         // then we can break out of the loop
-//         //         prime_pair.add_this_and_continue = total_to_add.clone();
-//         //     }
-//         //
-//         // }
-//         //
-//         //
-//         //
+        total_to_add += jump_distance[jump_index];
 
-//         // total_to_add = BigInt::zero();
-//         // println!("current_num_is_prime: {}", &current_num_is_prime);
-//         if current_num_is_prime {
-//             let new_prime_pair = PrimePair {
-//                 prime: current_num.clone(),
-//                 current_mod_value: BigInt::zero(),
-//                 left_until_next: current_num.clone(),
-//                 add_this_and_continue: BigInt::zero(),
-//             };
-//             // clear_console();
-//             // if &current_num % 600 == BigInt::from(23) {
-//             //     println!("Found a prime: {}", current_num);
-//             // }
-//             primes.push(new_prime_pair);
-//         }
+        // don't need to check numbers below the square root of the current number
+        // let mut check_until = current_num.clone();
+        // let check_until = (current_num.clone() as f64).sqrt() as BigInt + 1;
+        // println!("!!!!!!!!!!check_until: {}, current_num: {}", check_until, current_num);
 
-//         // need to switch to the new pattern here
-//         // I think there's a way to algorithmically figure out the pattern, but I'm not sure how to do it yet
-//         if &current_num == &BigInt::from(23) {
-//             // println!("current_num: {}", current_num);
-//             jump_distance = vec![6, 2, 6, 4, 2, 4, 2, 4];
-//             jump_index = jump_distance.len() - 1;
-//         }
+        let primes_length = primes.len();
+        let mut mod_shift = BigInt::zero();
 
-//         // need to keep index in bounds
-//         jump_index = (jump_index + 1) % jump_distance.len();
+        for (index, mut prime_pair) in primes.iter_mut().enumerate() {
+            // set the current_mod_value to be (current_num +1) % prime_pair.prime
+            // println!("current jump distance: {}", jump_distance[jump_index]);
+            prime_pair.current_mod_value =
+                // (&prime_pair.current_mod_value + jump_distance[jump_index]) % &prime_pair.prime;
+                (&prime_pair.current_mod_value + total_to_add.clone()) % &prime_pair.prime;
 
-//         // current_num += 2;
-//         // need to keep track of the jump distance
-//         current_num += jump_distance[jump_index];
-//     }
-//     let duration = start.elapsed();
+            // println!(
+            //     "adding {} to total_to_add",
+            //     prime_pair.add_this_and_continue
+            // );
+            if prime_pair.add_this_and_continue != BigInt::zero() {
+                total_to_add += prime_pair.add_this_and_continue.clone();
+                prime_pair.add_this_and_continue = BigInt::zero();
+            }
 
-//     // println!("primes: {:?}", primes);
-//     for prime_pair in &primes {
-//         // println!("prime: {}, current_mod_value: {}", prime_pair.prime, prime_pair.current_mod_value);
-//         primes_only.push(prime_pair.prime.clone());
-//     }
-//     // println!("uncaught_composites: {:?}", uncaught_composites);
-//     // println!("primes_only: {:?}", primes_only);
-//     println!("Time elapsed in generate_primes() is: {:?}", duration);
-//     println!("total primes: {}", primes_only.len());
-//     primes
-// }
+            // println!("current_num: {}, prime_pair.prime: {}, current_mod_value: {}", current_num, prime_pair.prime, prime_pair.current_mod_value);
+            if current_num_is_prime && prime_pair.current_mod_value == BigInt::zero() {
+                // println!(
+                //     "current num is not prime: {} , current_mod_value: {}, jump_distance: {}",
+                //     current_num, prime_pair.current_mod_value, jump_distance[jump_index]
+                // );
+                current_num_is_prime = false;
+                // uncaught_composites.push(current_num.clone());
+                // at this point we save the current total to add in the prime_pair.add_this_and_continue
+                // then we can break out of the loop
+                // println!("total_to_add: {}", total_to_add);
+                prime_pair.add_this_and_continue = total_to_add.clone();
+                // total_to_add = BigInt::zero();
+                break;
+            }
+            if prime_pair.prime.clone() * prime_pair.prime.clone() > current_num {
+                // println!(
+                //     "00000000prime_pair.prime {} * prime_pair.prime {} > current_num {}",
+                //     prime_pair.prime,
+                //     prime_pair.prime,
+                //     current_num
+                // );
+                // println!("total_to_add: {}, add_this_and_continue: {}", total_to_add, prime_pair.add_this_and_continue);
+                // only do this if we are not on the last iteration of the loop
+                // println!("index: {}, primes_length: {}", index, primes_length);
+                if index != &primes_length - 1 {
+                    prime_pair.add_this_and_continue = total_to_add.clone();
+                    mod_shift += total_to_add.clone();
+                } else if index == &primes_length - 1 {
+                    // println!("adding {} to total_to_add", total_to_add);
+                    // total_to_add += prime_pair.add_this_and_continue.clone();
+                    prime_pair.add_this_and_continue = BigInt::zero();
+                }
 
-pub fn generate_primes_unumtype(lower_limit: u128, upper_limit: u128) -> Vec<PrimePair> {
+                // prime_pair.add_this_and_continue = total_to_add.clone();
+                // println!("total_to_add: {}, add_this_and_continue: {}", total_to_add, prime_pair.add_this_and_continue);
+                break;
+            }
+        }
+        // println!("broke out of loop, current_num_is_prime: {}", current_num_is_prime);
+
+        total_to_add = BigInt::zero();
+        // println!("current_num_is_prime: {}", &current_num_is_prime);
+        if current_num_is_prime {
+            // I this this is the source of the problem
+            // if the loop breaks when it reaches the square root of the current number,
+            // then there will be an "add_this_and_continue" value earlier in the vec
+            // that should not be added to the new prime_pair
+            // maybe could fix this be pre-modding the current_mod_value by the prime number minus whatever the add_this_and_continue value is
+            let shifted_mod: BigInt = (current_num.clone() - mod_shift) % current_num.clone();
+            // let shifted_mod = ((current_num.clone() % current_num.clone()) - mod_shift) % current_num.clone();
+            // that way, when the add_this value comes along, it will be offset by the mod_shift
+            let new_prime_pair: PrimePairBigInt = PrimePairBigInt {
+                prime: current_num.clone(),
+                // current_mod_value: BigInt::zero(),
+                current_mod_value: shifted_mod,
+                left_until_next: current_num.clone(),
+                add_this_and_continue: BigInt::zero(),
+            };
+            if &current_num % 600 == BigInt::from(23) {
+                clear_console();
+                println!("Found a prime: {}", current_num);
+            }
+            primes.push(new_prime_pair);
+        }
+
+        // need to switch to the new pattern here
+        // I think there's a way to algorithmically figure out the pattern, but I'm not sure how to do it yet
+        if current_num == BigInt::from(23) {
+            // println!("current_num: {}", current_num);
+            jump_distance = vec![6, 2, 6, 4, 2, 4, 2, 4];
+            jump_index = jump_distance.len() - 1;
+        }
+
+        // need to keep index in bounds
+        jump_index = (jump_index + 1) % jump_distance.len();
+
+        // current_num += 2;
+        // need to keep track of the jump distance
+        // println!("======current_num: {}, jump_distance: {}", current_num, jump_distance[jump_index]);
+        current_num += jump_distance[jump_index];
+    }
+    let duration = start.elapsed();
+
+    // println!("primes: {:?}", primes);
+    for prime_pair in &primes {
+        // println!("prime: {}, current_mod_value: {}", prime_pair.prime, prime_pair.current_mod_value);
+        primes_only.push(prime_pair.prime.clone());
+    }
+    // println!("uncaught_composites: {:?}", uncaught_composites);
+    // println!("primes_only: {:?}", primes_only);
+    println!("Time elapsed in generate_primes() is: {:?}", duration);
+    println!("total primes: {}", primes_only.len());
+    // primes
+    PrimePairOrBigInt::BigIntPair(primes)
+}
+
+pub fn generate_primes_unumtype( upper_limit: u128) -> PrimePairOrBigInt {
     let mut primes: Vec<PrimePair> = Vec::new();
     let mut primes_only: Vec<u128> = Vec::new();
     let mut uncaught_composites: Vec<u128> = Vec::new();
@@ -325,15 +375,12 @@ pub fn generate_primes_unumtype(lower_limit: u128, upper_limit: u128) -> Vec<Pri
             // set the current_mod_value to be (current_num +1) % prime_pair.prime
             // println!("current jump distance: {}", jump_distance[jump_index]);
             prime_pair.current_mod_value =
-                // (&prime_pair.current_mod_value + jump_distance[jump_index]) % &prime_pair.prime;
                 (&prime_pair.current_mod_value + total_to_add.clone()) % &prime_pair.prime;
 
-            // println!(
-            //     "adding {} to total_to_add",
-            //     prime_pair.add_this_and_continue
-            // );
-            total_to_add += prime_pair.add_this_and_continue.clone();
-            prime_pair.add_this_and_continue = u128::zero();
+            if prime_pair.add_this_and_continue != u128::zero() {
+                total_to_add += prime_pair.add_this_and_continue.clone();
+                prime_pair.add_this_and_continue = u128::zero();
+            }
 
             // println!("current_num: {}, prime_pair.prime: {}, current_mod_value: {}", current_num, prime_pair.prime, prime_pair.current_mod_value);
             if current_num_is_prime && prime_pair.current_mod_value == u128::zero() {
@@ -350,7 +397,7 @@ pub fn generate_primes_unumtype(lower_limit: u128, upper_limit: u128) -> Vec<Pri
                 // total_to_add = u128::zero();
                 break;
             }
-            if prime_pair.prime.clone() * prime_pair.prime.clone() > current_num {
+            if prime_pair.prime * prime_pair.prime > current_num {
                 // println!(
                 //     "00000000prime_pair.prime {} * prime_pair.prime {} > current_num {}",
                 //     prime_pair.prime,
@@ -428,7 +475,7 @@ pub fn generate_primes_unumtype(lower_limit: u128, upper_limit: u128) -> Vec<Pri
     // println!("primes_only: {:?}", primes_only);
     println!("Time elapsed in generate_primes() is: {:?}", duration);
     println!("total primes: {}", primes_only.len());
-    primes
+    PrimePairOrBigInt::Pair(primes)
 }
 
 // pub fn find_next_prime(number: &BigInt) -> BigInt {
