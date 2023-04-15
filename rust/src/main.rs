@@ -29,11 +29,8 @@ fn main() {
     let choice = display_options();
     println!("You chose {}", choice);
 
-    // if the choice is 5, then the user wants to generate primes
     if choice == 5 {
-        // ask for a lower limit
-        println!("Lower limit of primes to generate?");
-
+        // if the choice is 5, then the user wants to generate primes
         // ask for an upper limit
         println!("Upper limit of primes to generate?");
         let mut upper_limit = String::new();
@@ -48,9 +45,6 @@ fn main() {
             Some(upper_limit) => generate_primes_unumtype(upper_limit),
             None => generate_primes(upper_limit),
         };
-        // generate_primes( BigInt::from(upper_limit));
-        // generate_primes_unumtype(upper_limit);
-        // generate_primes(BigInt::from(100));
         // call the restart function to ask if the user would like to do it again
         restart();
     } else {
