@@ -5,7 +5,8 @@ use duckdb::Connection;
 use num_bigint::BigInt;
 use primes::find_factors;
 use primes::find_next_prime;
-use primes::generate_primes;
+// use primes::generate_primes;
+use primes::generate_primes_unumtype;
 use std::io;
 use utilities::clear_console;
 
@@ -29,22 +30,32 @@ fn main() {
 
     // if the choice is 5, then the user wants to generate primes
     if choice == 5 {
-        // ask the user how many primes they want to generate
-
-        println!("Upper limit of primes to generate?");
-        let mut input = String::new();
+        // ask for a lower limit
+        println!("Lower limit of primes to generate?");
+        let mut lower_limit = String::new();
         io::stdin()
-            .read_line(&mut input)
+            .read_line(&mut lower_limit)
             .expect("Failed to read line");
-        let input = input.trim();
-        let input = input.parse::<BigInt>().unwrap();
+        let lower_limit = lower_limit.trim();
+        let lower_limit = lower_limit.parse::<u128>().unwrap();
+
+        // ask for an upper limit
+        println!("Upper limit of primes to generate?");
+        let mut upper_limit = String::new();
+        io::stdin()
+            .read_line(&mut upper_limit)
+            .expect("Failed to read line");
+        let upper_limit = upper_limit.trim();
+        let upper_limit = upper_limit.parse::<u128>().unwrap();
 
         // call the generate_primes function to generate the primes
-        generate_primes(input);
+        // generate_primes(lower_limit, upper_limit);
+        generate_primes_unumtype(lower_limit, upper_limit);
         // generate_primes(BigInt::from(100));
         // call the restart function to ask if the user would like to do it again
         restart();
     } else {
+        // all other choices will get a semi-prime and factor it
         // call the function to generate a semi-prime, based on the user's choice
         let semi_prime = get_semi_prime(choice);
         println!("The semi-prime is {}", semi_prime);
