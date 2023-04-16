@@ -6,8 +6,8 @@ use num_bigint::BigInt;
 use num_traits::ToPrimitive;
 use primes::find_factors;
 use primes::find_next_prime;
-use primes::generate_primes;
-use primes::generate_primes_unumtype;
+use primes::generate_primes_bigint;
+use primes::generate_primes_u128;
 use std::io;
 use utilities::clear_console;
 
@@ -40,10 +40,10 @@ fn main() {
         let upper_limit = upper_limit.trim();
         let upper_limit = upper_limit.parse::<BigInt>().unwrap();
 
-        // call the generate_primes function to generate the primes
+        // call the appropriate generate primes function to generate the primes
         match upper_limit.to_u128() {
-            Some(upper_limit) => generate_primes_unumtype(upper_limit),
-            None => generate_primes(upper_limit),
+            Some(upper_limit) => generate_primes_u128(upper_limit),
+            None => generate_primes_bigint(upper_limit),
         };
         // call the restart function to ask if the user would like to do it again
         restart();

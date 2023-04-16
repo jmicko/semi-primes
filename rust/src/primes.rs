@@ -87,13 +87,12 @@ pub enum PrimePairOrBigInt {
 }
 
 
-pub fn generate_primes(upper_limit: BigInt) -> PrimePairOrBigInt {
+pub fn generate_primes_bigint(upper_limit: BigInt) -> PrimePairOrBigInt {
     let mut primes: Vec<PrimePairBigInt> = Vec::new();
     let mut primes_only: Vec<BigInt> = Vec::new();
     let mut uncaught_composites: Vec<BigInt> = Vec::new();
 
     let mut current_num: BigInt = BigInt::from(3);
-    // let jump_distance: Vec<u8> = vec![6, 2, 6, 4, 2, 4, 2, 4];
     let mut jump_distance: Vec<u8> = vec![2];
     let mut jump_index = 0;
 
@@ -200,13 +199,13 @@ pub fn generate_primes(upper_limit: BigInt) -> PrimePairOrBigInt {
     }
     // println!("uncaught_composites: {:?}", uncaught_composites);
     // println!("primes_only: {:?}", primes_only);
-    println!("Time elapsed in generate_primes() is: {:?}", duration);
+    println!("Time elapsed in generate_primes_bigint() is: {:?}", duration);
     println!("total primes: {}", primes_only.len());
     // primes
     PrimePairOrBigInt::BigIntPair(primes)
 }
 
-pub fn generate_primes_unumtype(upper_limit: u128) -> PrimePairOrBigInt {
+pub fn generate_primes_u128(upper_limit: u128) -> PrimePairOrBigInt {
     let mut primes: Vec<PrimePair> = Vec::new();
     let mut primes_only: Vec<u128> = Vec::new();
     let mut uncaught_composites: Vec<u128> = Vec::new();
@@ -333,7 +332,7 @@ pub fn generate_primes_unumtype(upper_limit: u128) -> PrimePairOrBigInt {
     }
     println!("uncaught_composites: {:?}", uncaught_composites.len());
     // println!("primes_only: {:?}", primes_only);
-    println!("Time elapsed in generate_primes() is: {:?}", duration);
+    println!("Time elapsed in generate_primes_u128() is: {:?}", duration);
     println!("total primes: {}", primes_only.len());
     println!("Largest gap: {}", longest_prime_gap);
     PrimePairOrBigInt::Pair(primes)
