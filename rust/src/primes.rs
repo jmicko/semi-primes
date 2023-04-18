@@ -66,14 +66,14 @@ pub fn find_factors(semi_prime: &BigInt) -> (BigInt, BigInt) {
     (prime1, prime2)
 }
 
-// #[derive(Debug)]
+#[derive(Debug)]
 pub struct PrimePairBigInt {
     prime: BigInt,
     current_mod_value: BigInt,
     left_until_next: BigInt,
     add_this_and_continue: BigInt,
 }
-// #[derive(Debug)]
+#[derive(Debug)]
 pub struct PrimePair {
     prime: u128,
     current_mod_value: u128,
@@ -81,11 +81,11 @@ pub struct PrimePair {
     add_this_and_continue: u128,
 }
 
+#[derive(Debug)]
 pub enum PrimePairOrBigInt {
     Pair(Vec<PrimePair>),
     BigIntPair(Vec<PrimePairBigInt>),
 }
-
 
 pub fn generate_primes_bigint(upper_limit: BigInt) -> PrimePairOrBigInt {
     let mut primes: Vec<PrimePairBigInt> = Vec::new();
@@ -199,7 +199,10 @@ pub fn generate_primes_bigint(upper_limit: BigInt) -> PrimePairOrBigInt {
     }
     // println!("uncaught_composites: {:?}", uncaught_composites);
     // println!("primes_only: {:?}", primes_only);
-    println!("Time elapsed in generate_primes_bigint() is: {:?}", duration);
+    println!(
+        "Time elapsed in generate_primes_bigint() is: {:?}",
+        duration
+    );
     println!("total primes: {}", primes_only.len());
     // primes
     PrimePairOrBigInt::BigIntPair(primes)
@@ -338,18 +341,17 @@ pub fn generate_primes_u128(upper_limit: u128) -> PrimePairOrBigInt {
     PrimePairOrBigInt::Pair(primes)
 }
 
-
-
 // function to check if a number is prime
 fn is_prime(num: &BigInt) -> bool {
     // println!("checking if {} is prime", num);
     let two = BigInt::from(2);
     let three = BigInt::from(3);
+    let five = BigInt::from(5);
 
     // println!("{} == {} || {} == {}", *num, two, *num, three);
 
     // println!("point 1");
-    if *num == two || *num == three {
+    if *num == two || *num == three || *num == five {
         // println!("true 1");
         return true;
     }
@@ -384,6 +386,132 @@ fn is_prime(num: &BigInt) -> bool {
 
     // println!("true 2");
     true
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    // check if a number is prime, return true if it is, false if it is not
+    fn test_is_prime() {
+        // test primes
+        let num = BigInt::from(2);
+        assert_eq!(is_prime(&num), true);
+        let num = BigInt::from(3);
+        assert_eq!(is_prime(&num), true);
+        let num = BigInt::from(5);
+        assert_eq!(is_prime(&num), true);
+        let num = BigInt::from(7);
+        assert_eq!(is_prime(&num), true);
+        let num = BigInt::from(11);
+        assert_eq!(is_prime(&num), true);
+        let num = BigInt::from(13);
+        assert_eq!(is_prime(&num), true);
+        let num = BigInt::from(17);
+        assert_eq!(is_prime(&num), true);
+        let num = BigInt::from(19);
+        assert_eq!(is_prime(&num), true);
+        let num = BigInt::from(23);
+        assert_eq!(is_prime(&num), true);
+        let num = BigInt::from(29);
+        assert_eq!(is_prime(&num), true);
+        let num = BigInt::from(31);
+        assert_eq!(is_prime(&num), true);
+        let num = BigInt::from(37);
+        assert_eq!(is_prime(&num), true);
+        let num = BigInt::from(41);
+        assert_eq!(is_prime(&num), true);
+        let num = BigInt::from(43);
+        assert_eq!(is_prime(&num), true);
+        let num = BigInt::from(47);
+        assert_eq!(is_prime(&num), true);
+        let num = BigInt::from(53);
+        assert_eq!(is_prime(&num), true);
+        let num = BigInt::from(59);
+        assert_eq!(is_prime(&num), true);
+        let num = BigInt::from(61);
+        assert_eq!(is_prime(&num), true);
+        let num = BigInt::from(67);
+        assert_eq!(is_prime(&num), true);
+        let num = BigInt::from(71);
+        assert_eq!(is_prime(&num), true);
+        let num = BigInt::from(73);
+        assert_eq!(is_prime(&num), true);
+        let num = BigInt::from(79);
+        assert_eq!(is_prime(&num), true);
+        let num = BigInt::from(999623);
+        assert_eq!(is_prime(&num), true);
+        // test composites
+        let num = BigInt::from(4);
+        assert_eq!(is_prime(&num), false);
+        let num = BigInt::from(6);
+        assert_eq!(is_prime(&num), false);
+        let num = BigInt::from(8);
+        assert_eq!(is_prime(&num), false);
+        let num = BigInt::from(9);
+        assert_eq!(is_prime(&num), false);
+        let num = BigInt::from(5767);
+        assert_eq!(is_prime(&num), false);
+    }
+
+    #[test]
+    // test the generate_primes_u128() function
+    fn test_generate_primes_u128() {
+        let primes = generate_primes_u128(100);
+        // the function should return a vector of structs
+        if let PrimePairOrBigInt::Pair(primes) = primes {
+            // the vector should have 25 elements
+            assert_eq!(primes.len(), 25);
+            // the first element should be 2
+            assert_eq!(primes[0].prime, 2);
+            // the last element should be 97
+            assert_eq!(primes[primes.len() - 1].prime, 97);
+        } else {
+            panic!("generate_primes_u128() did not return a vector of structs");
+        }
+    }
+
+    #[test]
+    // test the generate_primes_bigint() function
+    fn test_generate_primes_bigint() {
+        let primes = generate_primes_bigint(BigInt::from(100));
+        // the function should return a vector of structs
+        if let PrimePairOrBigInt::BigIntPair(primes) = primes {
+            // the vector should have 25 elements
+            assert_eq!(primes.len(), 25);
+            // the first element should be 2
+            assert_eq!(primes[0].prime, BigInt::from(2));
+            // the last element should be 97
+            assert_eq!(primes[primes.len() - 1].prime, BigInt::from(97));
+        } else {
+            panic!("generate_primes_bigint() did not return a vector of structs");
+        }
+    }
+
+    #[test]
+    fn test_find_factors() {
+        let num = BigInt::from(5767);
+        let factors = find_factors(&num);
+        assert_eq!(factors.0, BigInt::from(73));
+        assert_eq!(factors.1, BigInt::from(79));
+
+        let num = BigInt::from(77);
+        let factors = find_factors(&num);
+        assert_eq!(factors.0, BigInt::from(7));
+        assert_eq!(factors.1, BigInt::from(11));
+    }
+
+    #[test]
+    fn test_find_next_prime() {
+        let num = BigInt::from(77);
+        let next_prime = find_next_prime(&num);
+        assert_eq!(next_prime, BigInt::from(79));
+        
+        let num = BigInt::from(98208);
+        let next_prime = find_next_prime(&num);
+        assert_eq!(next_prime, BigInt::from(98213));
+    }
 }
 
 /*
